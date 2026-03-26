@@ -1,0 +1,6 @@
+@TranQuocKiet_QuanLiTiemGiatSay_HostAddress = http://localhost:5065
+
+GET {{TranQuocKiet_QuanLiTiemGiatSay_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
