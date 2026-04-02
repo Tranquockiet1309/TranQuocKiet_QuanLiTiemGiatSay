@@ -50,7 +50,7 @@ namespace TranQuocKiet_QuanLiTiemGiatSay.Services
                     CustomerId = request.CustomerId,
                     ReceivedBy = userId,
                     ReceiveMethod = request.ReceiveMethod,
-                    Status = "PENDING",
+                    Status = OrderStatus.Pending,
                     ReceivedAt = DateTime.Now,
                     PromisedAt = request.PromisedAt,
                     DiscountAmount = request.DiscountAmount,
@@ -114,8 +114,16 @@ namespace TranQuocKiet_QuanLiTiemGiatSay.Services
 
             if (order == null) return null;
 
-            order.Status = status.ToUpper();
-            if (order.Status == "COMPLETED")
+            if (Enum.TryParse<OrderStatus>(status, true, out var orderStatus))
+            {
+                order.Status = orderStatus;
+            }
+            else
+            {
+                throw new ArgumentException($"Invalid order status: {status}");
+            }
+
+            if (order.Status == OrderStatus.Completed)
             {
                 order.CompletedAt = DateTime.Now;
             }
@@ -142,7 +150,7 @@ namespace TranQuocKiet_QuanLiTiemGiatSay.Services
                 OrderCode = o.OrderCode,
                 CustomerId = o.CustomerId,
                 CustomerName = o.Customer?.FullName ?? "Unknown",
-                Status = o.Status,
+                Status = o.Status.ToString(),
                 ReceivedAt = o.ReceivedAt,
                 PromisedAt = o.PromisedAt,
                 TotalAmount = o.TotalAmount,

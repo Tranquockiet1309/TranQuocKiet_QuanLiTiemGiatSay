@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using TranQuocKiet_QuanLiTiemGiatSay.Constants;
 using TranQuocKiet_QuanLiTiemGiatSay.Models;
 
@@ -53,6 +53,10 @@ namespace TranQuocKiet_QuanLiTiemGiatSay.Data
                 entity.HasIndex(x => x.OrderCode).IsUnique();
                 entity.HasIndex(x => x.Status);
 
+                entity.Property(x => x.Status)
+                      .HasConversion<string>()
+                      .HasMaxLength(20);
+
                 entity.HasOne(x => x.Customer)
                       .WithMany(x => x.Orders)
                       .HasForeignKey(x => x.CustomerId)
@@ -87,6 +91,10 @@ namespace TranQuocKiet_QuanLiTiemGiatSay.Data
                       .WithMany(x => x.Payments)
                       .HasForeignKey(x => x.OrderId)
                       .OnDelete(DeleteBehavior.Cascade);
+
+                entity.Property(x => x.Method)
+                      .HasConversion<string>()
+                      .HasMaxLength(20);
 
                 entity.HasOne(x => x.Receiver)
                       .WithMany()

@@ -1,4 +1,4 @@
-﻿namespace TranQuocKiet_QuanLiTiemGiatSay.Models
+namespace TranQuocKiet_QuanLiTiemGiatSay.Models
 {
     public class Order
     {
@@ -7,7 +7,8 @@
         public long CustomerId { get; set; }
         public long ReceivedBy { get; set; }
         public string ReceiveMethod { get; set; } = "AT_STORE";
-        public string Status { get; set; } = "RECEIVED";
+        public OrderStatus Status { get; set; } = OrderStatus.Pending;
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
         public DateTime ReceivedAt { get; set; } = DateTime.Now;
         public DateTime? PromisedAt { get; set; }
         public DateTime? CompletedAt { get; set; }

@@ -43,7 +43,7 @@ namespace TranQuocKiet_QuanLiTiemGiatSay.Services
             {
                 OrderId = request.OrderId,
                 Amount = request.Amount,
-                Method = request.Method.ToUpper(),
+                Method = Enum.TryParse<PaymentMethod>(request.Method, true, out var method) ? method : PaymentMethod.Cash,
                 PaymentType = request.PaymentType.ToUpper(),
                 ReceivedBy = userId,
                 Note = request.Note,
@@ -80,7 +80,7 @@ namespace TranQuocKiet_QuanLiTiemGiatSay.Services
                 OrderId = p.OrderId,
                 PaymentTime = p.PaymentTime,
                 Amount = p.Amount,
-                Method = p.Method,
+                Method = p.Method.ToString(),
                 PaymentType = p.PaymentType,
                 ReceivedBy = p.ReceivedBy,
                 ReceiverName = p.Receiver?.FullName ?? "Unknown",

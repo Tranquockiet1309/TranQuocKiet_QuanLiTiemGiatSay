@@ -1,4 +1,4 @@
-﻿namespace TranQuocKiet_QuanLiTiemGiatSay.Models
+namespace TranQuocKiet_QuanLiTiemGiatSay.Models
 {
     public class Payment
     {
@@ -6,7 +6,7 @@
         public long OrderId { get; set; }
         public DateTime PaymentTime { get; set; } = DateTime.Now;
         public decimal Amount { get; set; }
-        public string Method { get; set; } = "CASH";
+        public PaymentMethod Method { get; set; } = PaymentMethod.Cash;
         public string PaymentType { get; set; } = "FINAL";
         public long ReceivedBy { get; set; }
         public string? Note { get; set; }
