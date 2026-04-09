@@ -19,9 +19,12 @@ namespace TranQuocKiet_QuanLiTiemGiatSay.Models
         public decimal PaidAmount { get; set; } = 0;
         public string PaymentStatus { get; set; } = "UNPAID";
         public string? OrderNote { get; set; }
+        public long? ShipperId { get; set; }
 
         public Customer? Customer { get; set; }
         public User? Receiver { get; set; }
+        public Shipper? Shipper { get; set; }
+        public DeliveryProof? DeliveryProof { get; set; }
         public ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
         public ICollection<Payment> Payments { get; set; } = new List<Payment>();
     }

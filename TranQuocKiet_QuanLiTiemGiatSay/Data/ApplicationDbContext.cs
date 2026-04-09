@@ -18,6 +18,8 @@ namespace TranQuocKiet_QuanLiTiemGiatSay.Data
         public DbSet<OrderItem> OrderItems => Set<OrderItem>();
         public DbSet<Payment> Payments => Set<Payment>();
         public DbSet<InventoryTransaction> InventoryTransactions => Set<InventoryTransaction>();
+        public DbSet<Shipper> Shippers => Set<Shipper>();
+        public DbSet<DeliveryProof> DeliveryProofs => Set<DeliveryProof>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -66,6 +68,16 @@ namespace TranQuocKiet_QuanLiTiemGiatSay.Data
                       .WithMany()
                       .HasForeignKey(x => x.ReceivedBy)
                       .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(x => x.Shipper)
+                      .WithMany(x => x.Orders)
+                      .HasForeignKey(x => x.ShipperId)
+                      .OnDelete(DeleteBehavior.SetNull);
+
+                entity.HasOne(x => x.DeliveryProof)
+                      .WithOne(x => x.Order)
+                      .HasForeignKey<DeliveryProof>(x => x.OrderId)
+                      .OnDelete(DeleteBehavior.Cascade);
             });
 
             modelBuilder.Entity<OrderItem>(entity =>
@@ -110,6 +122,22 @@ namespace TranQuocKiet_QuanLiTiemGiatSay.Data
                 entity.HasOne(x => x.Creator)
                       .WithMany()
                       .HasForeignKey(x => x.CreatedBy)
+                      .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<Shipper>(entity =>
+            {
+                entity.HasKey(x => x.ShipperId);
+                entity.Property(x => x.Name).HasMaxLength(100);
+                entity.Property(x => x.Phone).HasMaxLength(20);
+            });
+
+            modelBuilder.Entity<DeliveryProof>(entity =>
+            {
+                entity.HasKey(x => x.Id);
+                entity.HasOne(x => x.Shipper)
+                      .WithMany(x => x.DeliveryProofs)
+                      .HasForeignKey(x => x.ShipperId)
                       .OnDelete(DeleteBehavior.Restrict);
             });
 

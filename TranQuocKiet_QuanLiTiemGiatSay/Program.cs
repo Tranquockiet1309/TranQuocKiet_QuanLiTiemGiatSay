@@ -7,6 +7,7 @@ using TranQuocKiet_QuanLiTiemGiatSay.Data;
 using TranQuocKiet_QuanLiTiemGiatSay.Services;
 using TranQuocKiet_QuanLiTiemGiatSay.Middleware;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using TranQuocKiet_QuanLiTiemGiatSay.Hubs;
 namespace TranQuocKiet_QuanLiTiemGiatSay
 {
     public class Program
@@ -17,6 +18,7 @@ namespace TranQuocKiet_QuanLiTiemGiatSay
 
             // Add services to the container.
             builder.Services.AddControllers();
+            builder.Services.AddSignalR();
 
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(
@@ -116,6 +118,7 @@ namespace TranQuocKiet_QuanLiTiemGiatSay
             }
 
             app.UseExceptionMiddleware();
+            app.UseStaticFiles();
             app.UseHttpsRedirection();
 
             app.UseCors("AllowAll");
@@ -124,6 +127,7 @@ namespace TranQuocKiet_QuanLiTiemGiatSay
             app.UseAuthorization();
 
             app.MapControllers();
+            app.MapHub<OrderHub>("/hub/order");
 
             app.Run();
         }
