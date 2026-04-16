@@ -12,6 +12,8 @@ namespace TranQuocKiet_QuanLiTiemGiatSay.Models
         public string PasswordHash { get; set; } = string.Empty;
         public string Role { get; set; } = "STAFF";
         public bool IsActive { get; set; } = true;
+        // 🔥 Link sang Customer
+        public Customer? Customer { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.Now;
     }
 }

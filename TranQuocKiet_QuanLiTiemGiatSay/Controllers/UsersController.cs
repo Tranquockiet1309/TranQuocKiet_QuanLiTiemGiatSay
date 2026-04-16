@@ -85,7 +85,7 @@ namespace TranQuocKiet_QuanLiTiemGiatSay.Controllers
                 }
             }
 
-            if (request.Role != Roles.OWNER && request.Role != Roles.STAFF)
+            if (request.Role != Roles.OWNER && request.Role != Roles.STAFF && request.Role != Roles.SHIPPER)
             {
                 return BadRequest(new
                 {
@@ -155,7 +155,7 @@ namespace TranQuocKiet_QuanLiTiemGiatSay.Controllers
                 }
             }
 
-            if (request.Role != Roles.OWNER && request.Role != Roles.STAFF)
+            if (request.Role != Roles.OWNER && request.Role != Roles.STAFF && request.Role != Roles.SHIPPER)
             {
                 return BadRequest(new
                 {
@@ -189,7 +189,38 @@ namespace TranQuocKiet_QuanLiTiemGiatSay.Controllers
                 data = response
             });
         }
+        [HttpGet("{id:long}")]
+        public async Task<IActionResult> GetUserById(long id)
+        {
+            var user = await _context.Users
+                .Where(x => x.UserId == id)
+                .Select(x => new UserResponse
+                {
+                    UserId = x.UserId,
+                    FullName = x.FullName,
+                    Phone = x.Phone,
+                    Username = x.Username,
+                    Role = x.Role,
+                    IsActive = x.IsActive,
+                    CreatedAt = x.CreatedAt
+                })
+                .FirstOrDefaultAsync();
 
+            if (user == null)
+            {
+                return NotFound(new
+                {
+                    success = false,
+                    message = "Không tìm thấy người dùng"
+                });
+            }
+
+            return Ok(new
+            {
+                success = true,
+                data = user
+            });
+        }
         [HttpDelete("{id:long}")]
         public async Task<IActionResult> DeleteUser(long id)
         {

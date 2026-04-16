@@ -95,27 +95,58 @@ namespace TranQuocKiet_QuanLiTiemGiatSay.Controllers
                 return BadRequest(new { success = false, message = "Họ tên, tên đăng nhập và mật khẩu là bắt buộc" });
             }
 
-            var existedUser = await _context.Users.AnyAsync(x => x.Username == request.Username);
+            // check username
+            var existedUser = await _context.Users
+                .AnyAsync(x => x.Username == request.Username);
+
             if (existedUser)
             {
                 return BadRequest(new { success = false, message = "Tên đăng nhập đã tồn tại" });
             }
 
+            // check phone (nên có)
+            if (!string.IsNullOrWhiteSpace(request.Phone))
+            {
+                var existedPhone = await _context.Users
+                    .AnyAsync(x => x.Phone == request.Phone);
+
+                if (existedPhone)
+                {
+                    return BadRequest(new { success = false, message = "Số điện thoại đã tồn tại" });
+                }
+            }
+
+            // 🔥 1. Tạo USER (CUSTOMER)
             var user = new User
             {
-                FullName = request.FullName,
-                Username = request.Username,
+                FullName = request.FullName.Trim(),
+                Username = request.Username.Trim(),
                 Phone = request.Phone,
                 PasswordHash = _passwordService.HashPassword(request.Password),
-                Role = "STAFF", // Mặc định là STAFF khi tự đăng ký
+                Role = "CUSTOMER", // ✅ FIX QUAN TRỌNG
                 IsActive = true,
                 CreatedAt = DateTime.Now
             };
 
             _context.Users.Add(user);
+            await _context.SaveChangesAsync(); // để lấy UserId
+
+            // 🔥 2. Tạo CUSTOMER và link
+            var customer = new Customer
+            {
+                FullName = user.FullName,
+                Phone = user.Phone ?? "",
+                UserId = user.UserId // 🔗 LINK
+            };
+
+            _context.Customers.Add(customer);
             await _context.SaveChangesAsync();
 
-            return Ok(new { success = true, message = "Đăng ký tài khoản thành công" });
+            return Ok(new
+            {
+                success = true,
+                message = "Đăng ký tài khoản thành công"
+            });
         }
 
         [HttpGet("me")]
@@ -135,6 +166,7 @@ namespace TranQuocKiet_QuanLiTiemGiatSay.Controllers
             var userId = long.Parse(userIdClaim);
 
             var user = await _context.Users
+                .Include(x => x.Customer)
                 .Where(x => x.UserId == userId)
                 .Select(x => new
                 {
@@ -144,7 +176,8 @@ namespace TranQuocKiet_QuanLiTiemGiatSay.Controllers
                     x.Username,
                     x.Role,
                     x.IsActive,
-                    x.CreatedAt
+                    x.CreatedAt,
+                    Address = x.Customer != null ? x.Customer.Address : null
                 })
                 .FirstOrDefaultAsync();
 

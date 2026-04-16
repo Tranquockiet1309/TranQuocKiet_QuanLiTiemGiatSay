@@ -36,7 +36,11 @@ namespace TranQuocKiet_QuanLiTiemGiatSay.Data
                 entity.Property(x => x.Phone).HasMaxLength(20);
                 entity.Property(x => x.Role).HasMaxLength(20);
             });
-
+            modelBuilder.Entity<Customer>()
+                .HasOne(c => c.User)
+                .WithOne(u => u.Customer)
+                .HasForeignKey<Customer>(c => c.UserId)
+                .OnDelete(DeleteBehavior.SetNull);
             modelBuilder.Entity<Customer>(entity =>
             {
                 entity.HasKey(x => x.CustomerId);
