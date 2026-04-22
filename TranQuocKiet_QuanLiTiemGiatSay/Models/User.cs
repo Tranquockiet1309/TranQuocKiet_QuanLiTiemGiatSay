@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace TranQuocKiet_QuanLiTiemGiatSay.Models
 {
@@ -14,6 +15,7 @@ namespace TranQuocKiet_QuanLiTiemGiatSay.Models
         public bool IsActive { get; set; } = true;
         // 🔥 Link sang Customer
         public Customer? Customer { get; set; }
+        public Shipper? Shipper { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.Now;
     }
 }

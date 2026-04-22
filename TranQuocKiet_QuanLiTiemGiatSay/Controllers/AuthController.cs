@@ -34,6 +34,8 @@ namespace TranQuocKiet_QuanLiTiemGiatSay.Controllers
             var usernameOrPhone = request.UsernameOrPhone.Trim();
 
             var user = await _context.Users
+                .Include(x => x.Customer)
+                .Include(x => x.Shipper)
                 .FirstOrDefaultAsync(x =>
                     x.Username == usernameOrPhone || x.Phone == usernameOrPhone);
 
@@ -73,7 +75,9 @@ namespace TranQuocKiet_QuanLiTiemGiatSay.Controllers
                 UserId = user.UserId,
                 FullName = user.FullName,
                 Username = user.Username,
-                Role = user.Role
+                Role = user.Role,
+                CustomerId = user.Customer?.CustomerId,
+                ShipperId = user.Shipper?.ShipperId
             };
 
             return Ok(new
@@ -167,6 +171,7 @@ namespace TranQuocKiet_QuanLiTiemGiatSay.Controllers
 
             var user = await _context.Users
                 .Include(x => x.Customer)
+                .Include(x => x.Shipper)
                 .Where(x => x.UserId == userId)
                 .Select(x => new
                 {
@@ -177,6 +182,8 @@ namespace TranQuocKiet_QuanLiTiemGiatSay.Controllers
                     x.Role,
                     x.IsActive,
                     x.CreatedAt,
+                    CustomerId = x.Customer != null ? (long?)x.Customer.CustomerId : null,
+                    ShipperId = x.Shipper != null ? (long?)x.Shipper.ShipperId : null,
                     Address = x.Customer != null ? x.Customer.Address : null
                 })
                 .FirstOrDefaultAsync();

@@ -48,6 +48,32 @@ namespace TranQuocKiet_QuanLiTiemGiatSay.Controllers
             });
         }
 
+        [HttpGet("role/{role}")]
+        public async Task<IActionResult> GetUsersByRole(string role)
+        {
+            var users = await _context.Users
+                .Where(x => x.Role == role)
+                .OrderByDescending(x => x.UserId)
+                .Select(x => new UserResponse
+                {
+                    UserId = x.UserId,
+                    FullName = x.FullName,
+                    Phone = x.Phone,
+                    Username = x.Username,
+                    Role = x.Role,
+                    IsActive = x.IsActive,
+                    CreatedAt = x.CreatedAt
+                })
+                .ToListAsync();
+
+            return Ok(new
+            {
+                success = true,
+                message = $"Lấy danh sách người dùng có role {role} thành công",
+                data = users
+            });
+        }
+
         [HttpPost]
         public async Task<IActionResult> CreateUser([FromBody] CreateUserRequest request)
         {

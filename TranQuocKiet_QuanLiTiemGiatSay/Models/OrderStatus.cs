@@ -7,6 +7,8 @@ namespace TranQuocKiet_QuanLiTiemGiatSay.Models
         Drying,
         Ironing,
         Completed,
+        Shipped,
+        Arrived,
         Delivered,
         Cancelled
     }

@@ -1,4 +1,4 @@
-﻿namespace TranQuocKiet_QuanLiTiemGiatSay.DTOs.Auth
+namespace TranQuocKiet_QuanLiTiemGiatSay.DTOs.Auth
 {
     public class LoginResponse
     {
@@ -7,5 +7,7 @@
         public string FullName { get; set; } = string.Empty;
         public string Username { get; set; } = string.Empty;
         public string Role { get; set; } = string.Empty;
+        public long? ShipperId { get; set; }
+        public long? CustomerId { get; set; }
     }
 }

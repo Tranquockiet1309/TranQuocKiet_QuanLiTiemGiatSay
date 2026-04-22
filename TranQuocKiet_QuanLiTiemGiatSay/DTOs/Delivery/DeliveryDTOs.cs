@@ -22,6 +22,7 @@ namespace TranQuocKiet_QuanLiTiemGiatSay.DTOs.Delivery
         public long ShipperId { get; set; }
         public string Name { get; set; } = string.Empty;
         public string Phone { get; set; } = string.Empty;
+        public long? UserId { get; set; }
     }
 
     public class AssignShipperRequest

@@ -19,7 +19,7 @@ namespace TranQuocKiet_QuanLiTiemGiatSay.Controllers
         private readonly IWebHostEnvironment _environment;
         private readonly IHubContext<OrderHub> _hubContext;
 
-        public virtual string UploadPath => Path.Combine(_environment.WebRootPath, "uploads", "delivery_proofs");
+        public virtual string UploadPath => Path.Combine(_environment.WebRootPath ?? Path.Combine(_environment.ContentRootPath, "wwwroot"), "uploads", "delivery_proofs");
 
         public DeliveryController(
             ApplicationDbContext context,
@@ -126,6 +126,69 @@ namespace TranQuocKiet_QuanLiTiemGiatSay.Controllers
             return Ok(ApiResponse<object>.SuccessResponse(orders, "Lấy danh sách đơn hàng thành công"));
         }
 
+        [HttpGet("my-orders")]
+        public async Task<IActionResult> GetMyOrders()
+        {
+            var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdClaim)) return Unauthorized();
+
+            var userId = long.Parse(userIdClaim);
+            var shipper = await _context.Shippers.FirstOrDefaultAsync(s => s.UserId == userId);
+            if (shipper == null)
+            {
+                return NotFound(ApiResponse<string>.ErrorResponse("Bạn chưa được cấp quyền Shipper trong hệ thống"));
+            }
+
+            var orders = await _context.Orders
+                .Where(o => o.ShipperId == shipper.ShipperId && o.Status != OrderStatus.Delivered && o.Status != OrderStatus.Cancelled)
+                .Select(o => new
+                {
+                    o.OrderId,
+                    o.OrderCode,
+                    o.Status,
+                    o.TotalAmount,
+                    CustomerName = o.Customer != null ? o.Customer.FullName : "N/A",
+                    o.CreatedAt
+                })
+                .ToListAsync();
+
+            return Ok(ApiResponse<object>.SuccessResponse(orders, "Lấy danh sách đơn hàng của tôi thành công"));
+        }
+
+        [HttpGet("my-history")]
+        public async Task<IActionResult> GetMyHistory()
+        {
+            var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdClaim)) return Unauthorized();
+
+            var userId = long.Parse(userIdClaim);
+            var shipper = await _context.Shippers.FirstOrDefaultAsync(s => s.UserId == userId);
+            if (shipper == null) return NotFound(ApiResponse<string>.ErrorResponse("Không tìm thấy thông tin Shipper"));
+
+            var orders = await _context.Orders
+                .Include(o => o.Customer)
+                .Include(o => o.DeliveryProof)
+                .Where(o => o.ShipperId == shipper.ShipperId && o.Status == OrderStatus.Delivered)
+                .OrderByDescending(o => o.CompletedAt)
+                .Select(o => new
+                {
+                    o.OrderId,
+                    o.OrderCode,
+                    o.Status,
+                    o.TotalAmount,
+                    CustomerName = o.Customer != null ? o.Customer.FullName : "N/A",
+                    o.CompletedAt,
+                    DeliveryProof = o.DeliveryProof != null ? new
+                    {
+                        o.DeliveryProof.ImageUrl,
+                        o.DeliveryProof.CreatedAt
+                    } : null
+                })
+                .ToListAsync();
+
+            return Ok(ApiResponse<object>.SuccessResponse(orders, "Lấy lịch sử giao hàng thành công"));
+        }
+
         [HttpGet("shippers")]
         public async Task<IActionResult> GetShippers()
         {
@@ -134,7 +197,8 @@ namespace TranQuocKiet_QuanLiTiemGiatSay.Controllers
                 {
                     ShipperId = s.ShipperId,
                     Name = s.Name,
-                    Phone = s.Phone
+                    Phone = s.Phone,
+                    UserId = s.UserId
                 })
                 .ToListAsync();
 
@@ -162,9 +226,56 @@ namespace TranQuocKiet_QuanLiTiemGiatSay.Controllers
             }
 
             order.ShipperId = request.ShipperId;
+            order.Status = OrderStatus.Shipped; // Đổi sang trạng thái Đang giao
             await _context.SaveChangesAsync();
 
             return Ok(ApiResponse<string>.SuccessResponse("Gán shipper thành công"));
+        }
+
+        [HttpPost("{orderId}/confirm-arrival")]
+        public async Task<IActionResult> ConfirmArrival(long orderId)
+        {
+            var order = await _context.Orders.FindAsync(orderId);
+            if (order == null) return NotFound(ApiResponse<string>.ErrorResponse("Không tìm thấy đơn hàng"));
+
+            order.Status = OrderStatus.Arrived; // Đổi sang trạng thái Đã đến điểm giao
+            await _context.SaveChangesAsync();
+
+            return Ok(ApiResponse<string>.SuccessResponse("Đã cập nhật trạng thái: Đã đến điểm giao"));
+        }
+
+        [HttpPut("shippers/{id}")]
+        public async Task<IActionResult> UpdateShipper(long id, [FromBody] Shipper request)
+        {
+            var shipper = await _context.Shippers.FindAsync(id);
+            if (shipper == null) return NotFound();
+
+            shipper.Name = request.Name;
+            shipper.Phone = request.Phone;
+            shipper.UserId = request.UserId;
+
+            await _context.SaveChangesAsync();
+            return Ok(ApiResponse<string>.SuccessResponse("Cập nhật shipper thành công"));
+        }
+
+        [HttpPost("shippers/{id}/link-user/{userId}")]
+        public async Task<IActionResult> LinkUser(long id, long userId)
+        {
+            var shipper = await _context.Shippers.FindAsync(id);
+            if (shipper == null) return NotFound(ApiResponse<string>.ErrorResponse("Không tìm thấy shipper"));
+
+            var user = await _context.Users.FindAsync(userId);
+            if (user == null) return NotFound(ApiResponse<string>.ErrorResponse("Không tìm thấy user"));
+
+            if (user.Role != "SHIPPER") 
+            {
+                return BadRequest(ApiResponse<string>.ErrorResponse("User được chọn phải có Role là SHIPPER"));
+            }
+
+            shipper.UserId = userId;
+            await _context.SaveChangesAsync();
+
+            return Ok(ApiResponse<string>.SuccessResponse($"Đã liên kết shipper {shipper.Name} với tài khoản {user.Username}"));
         }
     }
 }

@@ -1,3 +1,5 @@
+using TranQuocKiet_QuanLiTiemGiatSay.DTOs.Delivery;
+
 namespace TranQuocKiet_QuanLiTiemGiatSay.DTOs.Orders
 {
     public class CreateOrderRequest
@@ -30,6 +32,7 @@ namespace TranQuocKiet_QuanLiTiemGiatSay.DTOs.Orders
         public decimal TotalAmount { get; set; }
         public decimal PaidAmount { get; set; }
         public string PaymentStatus { get; set; } = string.Empty;
+        public DeliveryProofResponse? DeliveryProof { get; set; }
         public List<OrderItemResponse> Items { get; set; } = new();
     }
 

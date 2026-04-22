@@ -134,6 +134,11 @@ namespace TranQuocKiet_QuanLiTiemGiatSay.Data
                 entity.HasKey(x => x.ShipperId);
                 entity.Property(x => x.Name).HasMaxLength(100);
                 entity.Property(x => x.Phone).HasMaxLength(20);
+
+                entity.HasOne(s => s.User)
+                      .WithOne(u => u.Shipper)
+                      .HasForeignKey<Shipper>(s => s.UserId)
+                      .OnDelete(DeleteBehavior.SetNull);
             });
 
             modelBuilder.Entity<DeliveryProof>(entity =>

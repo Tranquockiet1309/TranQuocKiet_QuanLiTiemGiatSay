@@ -16,6 +16,10 @@ namespace TranQuocKiet_QuanLiTiemGiatSay.Models
         [MaxLength(20)]
         public string Phone { get; set; } = string.Empty;
 
+        // Link to User account for login
+        public long? UserId { get; set; }
+        public User? User { get; set; }
+
         // Navigation properties
         public ICollection<Order> Orders { get; set; } = new List<Order>();
         public ICollection<DeliveryProof> DeliveryProofs { get; set; } = new List<DeliveryProof>();
