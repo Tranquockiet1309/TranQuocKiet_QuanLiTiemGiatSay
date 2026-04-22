@@ -32,8 +32,21 @@ namespace TranQuocKiet_QuanLiTiemGiatSay.Services
             var order = await _context.Orders.FindAsync(request.OrderId);
             if (order == null) throw new Exception("Order not found.");
 
-            // Prevent overpayment
+            // Prevent overpayment - but allow idempotency if order is already paid
             decimal remaining = order.TotalAmount - order.PaidAmount;
+            if (remaining <= 0)
+            {
+                // Đơn hàng đã được thanh toán đủ (có thể do callback bị gọi 2 lần)
+                // Trả về payment gần nhất thay vì throw exception
+                var lastPayment = await _context.Payments
+                    .Where(p => p.OrderId == request.OrderId)
+                    .OrderByDescending(p => p.PaymentTime)
+                    .Include(p => p.Receiver)
+                    .FirstOrDefaultAsync();
+                if (lastPayment != null)
+                    return MapToResponse(lastPayment);
+                throw new Exception("Order is already fully paid.");
+            }
             if (request.Amount > remaining)
             {
                 throw new Exception($"Payment amount exceeds remaining balance ({remaining:N0}).");

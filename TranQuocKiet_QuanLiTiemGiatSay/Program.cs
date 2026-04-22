@@ -34,6 +34,7 @@ namespace TranQuocKiet_QuanLiTiemGiatSay
             builder.Services.AddScoped<IPaymentService, PaymentService>();
             builder.Services.AddScoped<IImportService, ImportService>();
             builder.Services.AddScoped<IDashboardService, DashboardService>();
+            builder.Services.AddScoped<IVnPayService, VnPayService>();
 
             // JWT configuration
             var jwtSettings = builder.Configuration.GetSection("Jwt");
