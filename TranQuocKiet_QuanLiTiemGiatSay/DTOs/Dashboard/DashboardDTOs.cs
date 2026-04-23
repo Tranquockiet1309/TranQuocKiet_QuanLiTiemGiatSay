@@ -25,4 +25,14 @@ namespace TranQuocKiet_QuanLiTiemGiatSay.DTOs.Dashboard
         public decimal CurrentBalance { get; set; }
         public string Unit { get; set; } = string.Empty;
     }
+
+    public class MonthlyMetric
+    {
+        public int Year { get; set; }
+        public int Month { get; set; }
+        public string MonthLabel { get; set; } = string.Empty;
+        public int TotalOrders { get; set; }
+        public int CompletedOrders { get; set; }
+        public decimal Revenue { get; set; }
+    }
 }

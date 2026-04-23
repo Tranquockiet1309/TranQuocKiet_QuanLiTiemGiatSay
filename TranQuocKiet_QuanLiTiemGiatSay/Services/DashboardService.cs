@@ -86,5 +86,63 @@ namespace TranQuocKiet_QuanLiTiemGiatSay.Services
 
             return stats;
         }
+
+        public async Task<List<MonthlyMetric>> GetMonthlySummaryAsync(int months)
+        {
+            var result = new List<MonthlyMetric>();
+            var now = DateTime.Now;
+
+            // Build month range (oldest → newest)
+            var monthList = Enumerable.Range(0, months)
+                .Select(i => now.AddMonths(-i))
+                .Reverse()
+                .ToList();
+
+            // Orders grouped by month
+            var startOfRange = new DateTime(monthList.First().Year, monthList.First().Month, 1);
+            var ordersByMonth = await _context.Orders
+                .Where(o => o.CreatedAt >= startOfRange)
+                .GroupBy(o => new { o.CreatedAt.Year, o.CreatedAt.Month })
+                .Select(g => new
+                {
+                    g.Key.Year,
+                    g.Key.Month,
+                    Total = g.Count(),
+                    Completed = g.Count(o => o.Status == Models.OrderStatus.Completed || o.Status == Models.OrderStatus.Delivered)
+                })
+                .ToListAsync();
+
+            // Revenue (payments) grouped by month
+            var revenueByMonth = await _context.Payments
+                .Where(p => p.PaymentTime >= startOfRange)
+                .GroupBy(p => new { p.PaymentTime.Year, p.PaymentTime.Month })
+                .Select(g => new
+                {
+                    g.Key.Year,
+                    g.Key.Month,
+                    Amount = g.Sum(p => p.Amount)
+                })
+                .ToListAsync();
+
+            var viMonths = new[] { "", "Th.1", "Th.2", "Th.3", "Th.4", "Th.5", "Th.6", "Th.7", "Th.8", "Th.9", "Th.10", "Th.11", "Th.12" };
+
+            foreach (var m in monthList)
+            {
+                var ord = ordersByMonth.FirstOrDefault(x => x.Year == m.Year && x.Month == m.Month);
+                var rev = revenueByMonth.FirstOrDefault(x => x.Year == m.Year && x.Month == m.Month);
+
+                result.Add(new MonthlyMetric
+                {
+                    Year = m.Year,
+                    Month = m.Month,
+                    MonthLabel = $"{viMonths[m.Month]}/{m.Year}",
+                    TotalOrders = ord?.Total ?? 0,
+                    CompletedOrders = ord?.Completed ?? 0,
+                    Revenue = rev?.Amount ?? 0
+                });
+            }
+
+            return result;
+        }
     }
 }

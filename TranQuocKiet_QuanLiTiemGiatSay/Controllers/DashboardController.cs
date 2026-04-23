@@ -28,5 +28,13 @@ namespace TranQuocKiet_QuanLiTiemGiatSay.Controllers
             var stats = await _dashboardService.GetStatsAsync(start, end);
             return Ok(ApiResponse<DashboardStatsResponse>.SuccessResponse(stats, "Lấy số liệu thống kê thành công"));
         }
+
+        [HttpGet("monthly-summary")]
+        public async Task<IActionResult> GetMonthlySummary([FromQuery] int months = 5)
+        {
+            if (months < 1 || months > 24) months = 5;
+            var data = await _dashboardService.GetMonthlySummaryAsync(months);
+            return Ok(ApiResponse<List<MonthlyMetric>>.SuccessResponse(data, "Lấy thống kê theo tháng thành công"));
+        }
     }
 }
